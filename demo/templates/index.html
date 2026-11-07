@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>penmimic · your handwriting, on demand</title>
+<style>
+  :root {
+    --bg: #f6f5f1; --surface: #ffffff; --surface-2: #f0eee8; --border: #e4e1d8;
+    --text: #1d1d22; --muted: #6b6b76; --accent: #3b4cca; --accent-2: #5b6ef0; --accent-text: #ffffff;
+    --danger: #c0392b; --shadow: 0 1px 2px rgba(20,20,40,.05), 0 8px 28px rgba(20,20,40,.06);
+    --radius: 16px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0f1014; --surface: #17181e; --surface-2: #1f2028; --border: #2a2c36;
+      --text: #ececf1; --muted: #9a9aa8; --accent: #7384ff; --accent-2: #94a1ff; --accent-text: #0f1014;
+      --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 28px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0f1014; --surface: #17181e; --surface-2: #1f2028; --border: #2a2c36;
+    --text: #ececf1; --muted: #9a9aa8; --accent: #7384ff; --accent-2: #94a1ff; --accent-text: #0f1014;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 28px rgba(0,0,0,.35);
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+         font: 15px/1.5 Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+         -webkit-font-smoothing: antialiased; }
+  header { display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+           max-width: 1240px; margin: 0 auto; padding: 22px 24px 8px; }
+  .brand { display: flex; align-items: center; gap: .7rem; }
+  .logo { width: 36px; height: 36px; border-radius: 11px; display: grid; place-items: center; color: var(--accent-text);
+          background: linear-gradient(135deg, var(--accent), var(--accent-2)); font-weight: 700; font-size: 18px; }
+  .brand h1 { margin: 0; font-size: 18px; letter-spacing: -.01em; }
+  .brand p { margin: 0; color: var(--muted); font-size: 12.5px; }
+  .icon-btn { border: 1px solid var(--border); background: var(--surface); color: var(--text); border-radius: 10px;
+              height: 36px; padding: 0 12px; cursor: pointer; font: inherit; font-size: 13px; }
+  .icon-btn:hover { border-color: var(--accent); }
+  main { max-width: 1240px; margin: 0 auto; padding: 12px 24px 40px; display: grid; gap: 20px;
+         grid-template-columns: minmax(300px, 400px) 1fr; align-items: start; }
+  @media (max-width: 880px) { main { grid-template-columns: 1fr; } }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); }
+  .panel { padding: 20px; display: grid; gap: 18px; }
+  .field > label, .label { display: flex; justify-content: space-between; align-items: baseline; font-weight: 600;
+                           font-size: 12.5px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); margin-bottom: 8px; }
+  .label output { font-variant-numeric: tabular-nums; color: var(--text); text-transform: none; letter-spacing: 0; font-weight: 600; }
+  textarea { width: 100%; min-height: 150px; resize: vertical; padding: 12px 14px; border-radius: 12px; font: inherit;
+             border: 1px solid var(--border); background: var(--surface-2); color: var(--text); }
+  textarea:focus, select:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .count { text-align: right; color: var(--muted); font-size: 12px; margin-top: 4px; }
+  .segmented { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; background: var(--surface-2);
+               border: 1px solid var(--border); padding: 3px; border-radius: 12px; gap: 3px; }
+  .segmented button { border: 0; background: transparent; color: var(--muted); padding: 8px 10px; border-radius: 9px;
+                      font: inherit; font-weight: 600; cursor: pointer; }
+  .segmented button[aria-pressed="true"] { background: var(--surface); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+  input[type=range] { width: 100%; accent-color: var(--accent); }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  select, input[type=color] { width: 100%; height: 40px; border-radius: 10px; border: 1px solid var(--border);
+                              background: var(--surface-2); color: var(--text); font: inherit; padding: 0 10px; }
+  input[type=color] { padding: 3px; cursor: pointer; }
+  .swatches { display: flex; gap: 8px; margin-top: 8px; }
+  .swatches button { width: 24px; height: 24px; border-radius: 50%; border: 2px solid var(--surface); cursor: pointer;
+                     box-shadow: 0 0 0 1px var(--border); }
+  .actions { display: flex; gap: 10px; }
+  .btn { flex: 1; height: 44px; border-radius: 12px; border: 0; font: inherit; font-weight: 600; cursor: pointer;
+         display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
+  .btn.primary { background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: var(--accent-text); }
+  .btn.ghost { background: var(--surface-2); color: var(--text); border: 1px solid var(--border); }
+  .btn[disabled], .btn.disabled { opacity: .45; pointer-events: none; }
+  .stage { padding: 14px; min-height: 420px; position: sticky; top: 16px; }
+  .stage-head { display: flex; justify-content: space-between; align-items: center; padding: 4px 6px 12px; color: var(--muted); font-size: 13px; }
+  .paper { border-radius: 12px; background: #fff; border: 1px solid var(--border); min-height: 340px; display: grid;
+           place-items: center; overflow: auto; position: relative; }
+  .paper img { max-width: 100%; height: auto; display: block; }
+  .empty { color: #8a8a96; padding: 40px; text-align: center; }
+  .spinner { position: absolute; top: 14px; right: 14px; width: 18px; height: 18px; border-radius: 50%;
+             border: 2px solid #d5d7ee; border-top-color: var(--accent); animation: spin .7s linear infinite; opacity: 0; transition: opacity .15s; }
+  .loading .spinner { opacity: 1; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .error { margin: 10px 4px 0; color: var(--danger); font-size: 13px; min-height: 18px; }
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <div class="logo">p</div>
+    <div><h1>penmimic</h1><p>Type anything. See it in your handwriting.</p></div>
+  </div>
+  <button class="icon-btn" id="theme" type="button">Theme</button>
+</header>
+
+<main>
+  <section class="card panel">
+    <div class="field">
+      <label for="text">Your text <span id="count"></span></label>
+      <textarea id="text" maxlength="{{ max_text }}">Hello world, this is my handwriting!</textarea>
+    </div>
+
+    <div class="field">
+      <div class="label">Handwriting style</div>
+      <div class="segmented" id="style" role="group" aria-label="Handwriting style">
+        <button type="button" data-value="block" aria-pressed="true">Block</button>
+        <button type="button" data-value="cursive" aria-pressed="false">Cursive</button>
+      </div>
+    </div>
+
+    <div class="field"><div class="label">Size <output id="o-size"></output></div>
+      <input id="size" type="range" min="0.4" max="2" step="0.05" value="1"></div>
+    <div class="two">
+      <div class="field"><div class="label">Letter spacing <output id="o-letter_spacing"></output></div>
+        <input id="letter_spacing" type="range" min="0" max="3" step="0.05" value="1"></div>
+      <div class="field"><div class="label">Word spacing <output id="o-word_spacing"></output></div>
+        <input id="word_spacing" type="range" min="0" max="3" step="0.05" value="1"></div>
+    </div>
+    <div class="two">
+      <div class="field"><div class="label">Line spacing <output id="o-line_spacing"></output></div>
+        <input id="line_spacing" type="range" min="1" max="3" step="0.05" value="1.6"></div>
+      <div class="field"><div class="label">Messiness <output id="o-jitter"></output></div>
+        <input id="jitter" type="range" min="0" max="2" step="0.05" value="1"></div>
+    </div>
+
+    <div class="two">
+      <div class="field"><div class="label">Paper</div>
+        <select id="paper"><option value="plain">Plain</option><option value="lined">Lined</option></select></div>
+      <div class="field"><div class="label">Ink</div>
+        <input id="ink" type="color" value="#1b1b3a">
+        <div class="swatches" id="swatches"></div></div>
+    </div>
+
+    <div class="actions">
+      <button class="btn primary" id="go" type="button">Write it</button>
+      <a class="btn ghost disabled" id="download" download="handwriting.png">Download PNG</a>
+    </div>
+  </section>
+
+  <section class="card stage">
+    <div class="stage-head"><span>Preview</span><span id="status">Updates as you type</span></div>
+    <div class="paper" id="paper-box">
+      <div class="spinner"></div>
+      <div class="empty" id="empty">Your handwriting will appear here.</div>
+      <img id="result" alt="Rendered handwriting" hidden>
+    </div>
+    <div class="error" id="error" role="alert"></div>
+  </section>
+</main>
+
+<script>
+  const $ = id => document.getElementById(id);
+  const sliders = ["size", "letter_spacing", "word_spacing", "line_spacing", "jitter"];
+  let style = "block", timer = null, sequence = 0, lastUrl = null;
+
+  function readouts() {
+    sliders.forEach(id => { $("o-" + id).textContent = (+$(id).value).toFixed(2).replace(/0$/, ""); });
+    $("count").textContent = $("text").value.length + " / {{ max_text }}";
+  }
+
+  async function render() {
+    const mine = ++sequence;
+    $("paper-box").classList.add("loading");
+    $("error").textContent = "";
+    try {
+      const body = { text: $("text").value, style, paper: $("paper").value, ink: $("ink").value };
+      sliders.forEach(id => body[id] = $(id).value);
+      const response = await fetch("/render", { method: "POST", headers: { "Content-Type": "application/json" },
+                                                body: JSON.stringify(body) });
+      if (mine !== sequence) return;                       // a newer request replaced this one
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.error || "Something went wrong.");
+      }
+      const url = URL.createObjectURL(await response.blob());
+      if (lastUrl) URL.revokeObjectURL(lastUrl);
+      lastUrl = url;
+      $("result").src = url; $("result").hidden = false; $("empty").hidden = true;
+      $("download").href = url; $("download").classList.remove("disabled");
+      $("status").textContent = "Updated just now";
+    } catch (error) {
+      $("error").textContent = error.message;
+    } finally {
+      if (mine === sequence) $("paper-box").classList.remove("loading");
+    }
+  }
+
+  function schedule() { readouts(); clearTimeout(timer); $("status").textContent = "Updating…"; timer = setTimeout(render, 350); }
+
+  ["text", "paper", "ink", ...sliders].forEach(id => $(id).addEventListener("input", schedule));
+  document.querySelectorAll("#style button").forEach(button => button.addEventListener("click", () => {
+    style = button.dataset.value;
+    document.querySelectorAll("#style button").forEach(b => b.setAttribute("aria-pressed", String(b === button)));
+    schedule();
+  }));
+  $("go").addEventListener("click", render);
+  $("text").addEventListener("keydown", e => { if ((e.ctrlKey || e.metaKey) && e.key === "Enter") render(); });
+
+  ["#1b1b3a", "#111111", "#1d4ed8", "#0f766e", "#9f1239"].forEach(color => {
+    const b = document.createElement("button"); b.type = "button"; b.style.background = color; b.title = color;
+    b.addEventListener("click", () => { $("ink").value = color; schedule(); });
+    $("swatches").appendChild(b);
+  });
+
+  $("theme").addEventListener("click", () => {
+    const root = document.documentElement;
+    const dark = root.dataset.theme ? root.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+    root.dataset.theme = dark ? "light" : "dark";
+  });
+
+  readouts(); render();
+</script>
+</body>
+</html>
